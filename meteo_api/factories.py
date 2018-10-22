@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 import factory
+from django.utils import timezone
 
 
 class ForecastFactory(factory.django.DjangoModelFactory):
@@ -9,5 +10,5 @@ class ForecastFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = 'meteo_api.Forecast'
 
-    temperature_celsius = random.randint()
-    forecast_datetime = datetime.now()
+    temperature = random.randint(-10, 30)
+    forecast_datetime = datetime.now(tz=timezone.utc)
