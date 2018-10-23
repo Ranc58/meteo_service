@@ -6,27 +6,38 @@ from django.utils.translation import ugettext_lazy as _
 
 class ForecastQuerySet(models.QuerySet):
 
-    def forecasts_period(self, temperature_type, days):
+    def _build_forecasts_list(self, forecasts, temperature_type):
+        values = []
+        if temperature_type == 'f':
+            for x in forecasts:
+                x.forecast_temperature = x.get_in_fahrenheit
+                values.append(x)
+        elif temperature_type == 'k':
+            for x in forecasts:
+                x.forecast_temperature = x.get_in_kelvin
+                values.append(x)
+        else:
+            for x in forecasts:
+                x.forecast_temperature = x.temperature
+                values.append(x)
+        return values
+
+    def forecasts_by_period(self, temperature_type, days):
         current_day = datetime.now()
         max_date = current_day + timedelta(days=days)
         queryset = Forecast.objects.filter(
             forecast_datetime__gte=current_day.date(),
             forecast_datetime__lte=max_date.date()
         )
-        values = []
-        if temperature_type and temperature_type == 'f':
-            for x in queryset:
-                x.forecast_temperature = x.get_in_fahrenheit
-                values.append(x)
-        elif temperature_type and temperature_type == 'k':
-            for x in queryset:
-                x.forecast_temperature = x.get_in_kelvin
-                values.append(x)
-        else:
-            for x in queryset:
-                x.forecast_temperature = x.temperature
-                values.append(x)
-        return values or queryset
+        forecasts = self._build_forecasts_list(queryset, temperature_type)
+        return forecasts
+
+    def forecasts_by_date(self, forecast_date, temperature_type, forecast_hour=None):
+        queryset = Forecast.objects.filter(forecast_datetime__contains=forecast_date)
+        if forecast_hour:
+            queryset = queryset.filter(forecast_datetime__hour=forecast_hour)
+        forecasts = self._build_forecasts_list(queryset, temperature_type)
+        return forecasts
 
 
 class Forecast(models.Model):
