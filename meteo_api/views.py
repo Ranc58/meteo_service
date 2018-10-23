@@ -1,17 +1,14 @@
-from datetime import datetime, timedelta
-
-from django.db.models import F
-from django.conf import settings
 from rest_framework import generics
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from .serializers import ForecastSerializer
 from .models import Forecast
+from .schemas import ForecastsListFilterBackend, ForecastDateListFilterBackend
 
 
 class ForecastList(generics.ListAPIView):
     serializer_class = ForecastSerializer
+    filter_backends = (ForecastsListFilterBackend,)
     name = 'forecast-list'
 
     def get_queryset(self):
@@ -26,7 +23,7 @@ class ForecastList(generics.ListAPIView):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         result = {
-            'type': self.request.query_params.get('type') or 'c',
+            'type': request.query_params.get('type') or 'c',
             'forecasts': serializer.data
         }
         return Response(result)
@@ -36,6 +33,7 @@ class ForecastDateList(generics.ListAPIView):
     serializer_class = ForecastSerializer
     name = 'forecast-detail'
     lookup_field = 'forecast_date'
+    filter_backends = (ForecastDateListFilterBackend,)
 
     def get_queryset(self, *args, **kwargs):
         data = dict(
@@ -50,8 +48,7 @@ class ForecastDateList(generics.ListAPIView):
         queryset = self.get_queryset(forecast_date=forecast_date)
         serializer = self.get_serializer(queryset, many=True)
         result = {
-            'type': self.request.query_params.get('type') or 'c',
+            'type': request.query_params.get('type') or 'c',
             'day_forecasts': serializer.data
         }
         return Response(result)
-

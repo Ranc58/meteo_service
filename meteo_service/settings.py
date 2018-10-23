@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
+    'rest_framework_swagger',
     'meteo_api',
 ]
 
@@ -127,5 +128,4 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
-#Days count for meteo forecast
-DAYS_COUNT = [3, 5, 7]
+DATETIME_FORMAT = '%Y-%d-%m %H:%M'
