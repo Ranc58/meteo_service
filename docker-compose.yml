@@ -11,3 +11,12 @@ services:
     volumes:
       - ./postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
       - ./postgres/pgdata/data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    depends_on:
+    - postgres
+    env_file:
+    - env/.env
+    ports:
+    - "8000:8000"
