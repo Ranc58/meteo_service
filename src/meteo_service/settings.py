@@ -128,4 +128,4 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
-DATETIME_FORMAT = '%Y-%d-%m %H:%M'
+DATETIME_FORMAT = '%Y-%m-%d %H:%M'
