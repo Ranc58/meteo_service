@@ -22,8 +22,15 @@ before_install:
 
 install:
   - pip3 install -r src/requirements.txt
+  - pip3 install coveralls
+  - pip3 install coverage
   - python3 src/manage.py migrate
 
-script:
+before_script: cd src
 
-  - python3 src/manage.py test meteo_api
+script:
+  - coverage run --source='.' manage.py test
+  - coverage report -m
+
+after_success:
+  - coveralls

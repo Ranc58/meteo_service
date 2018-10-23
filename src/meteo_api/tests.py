@@ -1,24 +1,23 @@
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-
+from django.utils import timezone
 from rest_framework.test import APITestCase
 from rest_framework import status
 
 from .factories import ForecastFactory
-from .models import Forecast
 
 
 def create_test_data(days, yesterday=None):
     if yesterday:
-        yesterday = datetime.now().replace(hour=0) - timedelta(days=1)
+        yesterday = timezone.now().replace(hour=0) - timedelta(days=1)
         for forecast_hour in range(0, 24):
             ForecastFactory(
                 forecast_datetime=yesterday.replace(hour=forecast_hour)
             )
         return
     for forecast_day in range(days):
-        day = datetime.now().replace(hour=0) + timedelta(days=forecast_day)
+        day = timezone.now().replace(hour=0) + timedelta(days=forecast_day)
         for forecast_hour in range(0, 24):
             ForecastFactory(
                 forecast_datetime=day.replace(hour=forecast_hour)
@@ -110,7 +109,7 @@ class TestForecastHandler(APITestCase):
 
     def test_get_by_date_celsius(self):
         create_test_data(3, yesterday=True)
-        yesterday = datetime.now() - timedelta(days=1)
+        yesterday = timezone.now() - timedelta(days=1)
         response = self.client.get(
             self.base_url.format(str(yesterday.date()))
         )
@@ -121,7 +120,7 @@ class TestForecastHandler(APITestCase):
 
     def test_get_by_date_kelvin(self):
         create_test_data(3, yesterday=True)
-        yesterday = datetime.now() - timedelta(days=1)
+        yesterday = timezone.now() - timedelta(days=1)
         response = self.client.get(
             self.base_url.format(str(yesterday.date())),
             {'type': 'k'}
@@ -133,7 +132,7 @@ class TestForecastHandler(APITestCase):
 
     def test_get_by_date_fahrenheit(self):
         create_test_data(3, yesterday=True)
-        yesterday = datetime.now() - timedelta(days=1)
+        yesterday = timezone.now() - timedelta(days=1)
         response = self.client.get(
             self.base_url.format(str(yesterday.date())),
             {'type': 'f'}
@@ -145,7 +144,7 @@ class TestForecastHandler(APITestCase):
 
     def test_get_by_current_datetime_celsius(self):
         create_test_data(3, yesterday=True)
-        yesterday = datetime.now() - timedelta(days=1)
+        yesterday = timezone.now() - timedelta(days=1)
         response = self.client.get(
             self.base_url.format(str(yesterday.date())),
             {'hour': 12}
@@ -157,7 +156,7 @@ class TestForecastHandler(APITestCase):
 
     def test_get_by_current_datetime_fahrenheit(self):
         create_test_data(3, yesterday=True)
-        yesterday = datetime.now() - timedelta(days=1)
+        yesterday = timezone.now() - timedelta(days=1)
         response = self.client.get(
             self.base_url.format(str(yesterday.date())),
             {'type': 'f', 'hour': 12}
@@ -169,7 +168,7 @@ class TestForecastHandler(APITestCase):
 
     def test_get_by_current_datetime_kelvin(self):
         create_test_data(3, yesterday=True)
-        yesterday = datetime.now() - timedelta(days=1)
+        yesterday = timezone.now() - timedelta(days=1)
         response = self.client.get(
             self.base_url.format(str(yesterday.date())),
             {'type': 'k', 'hour': 12}

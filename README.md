@@ -1,5 +1,10 @@
+
 Meteo service
 =================
+[![Coverage Status](https://coveralls.io/repos/github/Ranc58/meteo_service/badge.svg?branch=develop)](https://coveralls.io/github/Ranc58/meteo_service?branch=develop)
+[![Build Status](https://travis-ci.org/Ranc58/meteo_service.svg?branch=master)](https://travis-ci.org/Ranc58/meteo_service)
+
+
 Meteo API. Based on DRF. Written for fun.
 
 # How to install
