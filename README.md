@@ -1,10 +1,13 @@
 Meteo service
 =================
+Meteo API. Based on DRF. Written for fun.
+
 # How to install
 
 1) With docker:
     - If it need - setup postgres in `env/.env` file. By default, this file is configured for use with Docker.
     - `docker-compose up --build`.
+    - For create forecasts from 1 november 2016 `docker-compose exec app python3 manage.py make_forecasts`.
     - For run tests `docker-compose exec app python3 manage.py test`. \
     Postgres data will be saved in `postgres/pgdata`
     
@@ -18,6 +21,7 @@ Meteo service
     - `pip3 install -r requirements.txt`
     - Run django and celery `./run_server.sh`.
     - For run tests (from `src`) `python3 manage.py test`.
+    - For create forecasts from 1 november 2016 (from `src`) `python3 manage.py make_forecasts`.
     
 # How to use
 Full SWAGGER doc you can find here: `http://127.0.0.1:8000/a/v1/doc` 
@@ -48,7 +52,8 @@ Full SWAGGER doc you can find here: `http://127.0.0.1:8000/a/v1/doc`
 ```
 You can use additional query params:
     - `type`: Temperature type. May have values `c`(celsius), `f`(fahrenheit), `k`(kelvin). By default used celsius.
-    - `days`: Forecast days count. Should be int values. By default - 3 days. 
+    - `days`: Forecast days count. Should be int values. By default - 3 days.   
+
 2) Make `GET` request to `http://127.0.0.1:8000/a/v1/forecasts/<DATE>` for get forecasts for current day. `DATE` format must be `YEAR-m-d`. It will return something like
 ```python
 {
