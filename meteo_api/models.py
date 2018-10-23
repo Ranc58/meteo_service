@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 
 class ForecastQuerySet(models.QuerySet):
 
-    def forecasts_by_type(self, temperature_type, days):
+    def forecasts_period(self, temperature_type, days):
         current_day = datetime.now()
         max_date = current_day + timedelta(days=days)
         queryset = Forecast.objects.filter(

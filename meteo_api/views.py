@@ -18,7 +18,7 @@ class ForecastList(generics.ListAPIView):
             temperature_type=self.request.query_params.get('type', 'c'),
             days=int(self.request.query_params.get('days', 3))
         )
-        queryset = Forecast.objects.forecasts_by_type(**data)
+        queryset = Forecast.objects.forecasts_period(**data)
         return queryset
 
     def list(self, request, *args, **kwargs):
