@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import random
 
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from meteo_api import factories
 
 
@@ -14,7 +15,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         start_date = datetime.strptime('Nov 1 2016', '%b %d %Y')
-        end_date = datetime.now()
+        end_date = timezone.now()
         for single_date in self.daterange(start_date, end_date):
             for forecast_hour in range(0, 24):
                 factories.ForecastFactory(

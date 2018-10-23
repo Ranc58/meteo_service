@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -27,7 +28,7 @@ class ForecastQuerySet(models.QuerySet):
             days = 7
         elif days <= 0:
             days = 3
-        current_day = datetime.now()
+        current_day = timezone.now()
         max_date = current_day + timedelta(days=days)
         queryset = Forecast.objects.filter(
             forecast_datetime__gte=current_day.date(),
