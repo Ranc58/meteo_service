@@ -22,9 +22,9 @@ Meteo API. Based on DRF. Written for fun.
       `python3 -m venv myenv`\
       `source myenv/bin/activate`
     - `cp env/.env src/;  cd src/`.
-    - Setup postgres and redis in `.env` file.
+    - Setup postgres in `.env` file.
     - `pip3 install -r requirements.txt`
-    - Run django and celery `./run_server.sh`.
+    - Run django `./run_server.sh`.
     - For run tests (from `src`) `python3 manage.py test`.
     - For create forecasts from 1 november 2016 (from `src`) `python3 manage.py make_forecasts`.
     
