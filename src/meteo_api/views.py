@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from .serializers import ForecastSerializer
 from .models import Forecast
-from .schemas import ForecastsListFilterBackend, ForecastDateListFilterBackend
+from .filters import ForecastsListFilterBackend, ForecastDateListFilterBackend
 
 
 class ForecastList(generics.ListAPIView):
