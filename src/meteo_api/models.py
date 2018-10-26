@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.db import models
 from django.utils import timezone
@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 
 class ForecastQuerySet(models.QuerySet):
 
-    def _build_forecasts_list(self, forecasts, temperature_type):
+    def _build_meteo_list(self, forecasts, temperature_type):
         values = []
         if temperature_type == 'f':
             for x in forecasts:
@@ -23,25 +23,24 @@ class ForecastQuerySet(models.QuerySet):
                 values.append(x)
         return values
 
-    def forecasts_by_period(self, temperature_type, days):
+    def forecasts_by_period(self, temperature_type, days, forecast_start_date):
         if days > 7:
             days = 7
         elif days <= 0:
             days = 3
-        current_day = timezone.now()
-        max_date = current_day + timedelta(days=days)
+        max_date = forecast_start_date + timedelta(days=days)
         queryset = Forecast.objects.filter(
-            forecast_datetime__gte=current_day.date(),
-            forecast_datetime__lte=max_date.date()
+            forecast_datetime__gte=forecast_start_date,
+            forecast_datetime__lte=max_date
         )
-        forecasts = self._build_forecasts_list(queryset, temperature_type)
+        forecasts = self._build_meteo_list(queryset, temperature_type)
         return forecasts
 
-    def forecasts_by_date(self, forecast_date, temperature_type, forecast_hour=None):
-        queryset = Forecast.objects.filter(forecast_datetime__contains=forecast_date)
-        if forecast_hour:
-            queryset = queryset.filter(forecast_datetime__hour=forecast_hour)
-        forecasts = self._build_forecasts_list(queryset, temperature_type)
+    def forecasts_by_date(self, request_date, temperature_type, request_hour=None):
+        queryset = Forecast.objects.filter(forecast_datetime__contains=request_date)
+        if request_hour:
+            queryset = queryset.filter(forecast_datetime__hour=request_hour)
+        forecasts = self._build_meteo_list(queryset, temperature_type)
         return forecasts
 
 
@@ -56,9 +55,11 @@ class Forecast(models.Model):
 
     @property
     def get_in_fahrenheit(self):
-        return (self.temperature * 9/5) + 32
+        result = (self.temperature * 9/5) + 32
+        return round(result, 2)
 
     @property
     def get_in_kelvin(self):
-        return self.temperature * + 273.15
+        result = self.temperature * + 273.15
+        return round(result, 2)
 

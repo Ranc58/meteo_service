@@ -12,7 +12,7 @@ Meteo API. Based on DRF. Written for fun.
 1) With docker:
     - If it need - setup postgres in `env/.env` file. By default, this file is configured for use with Docker.
     - `docker-compose up --build`.
-    - For create forecasts from 1 november 2016 `docker-compose exec app python3 manage.py make_forecasts`.
+    - For create forecasts from 1 november 2016 `docker-compose exec app python3 manage.py make_forecasts`.  Run with flag `--week` for crate forecasts until next 7 days.
     - For run tests `docker-compose exec app python3 manage.py test`. \
     Postgres data will be saved in `postgres/pgdata`
     
@@ -26,63 +26,59 @@ Meteo API. Based on DRF. Written for fun.
     - `pip3 install -r requirements.txt`
     - Run django `./run_server.sh`.
     - For run tests (from `src`) `python3 manage.py test`.
-    - For create forecasts from 1 november 2016 (from `src`) `python3 manage.py make_forecasts`.
+    - For create forecasts from 1 november 2016 (from `src`) `python3 manage.py make_forecasts`. Run with flag `--week` for crate forecasts until next 7 days.
     
 # How to use
 Full SWAGGER doc you can find here: `http://127.0.0.1:8000/a/v1/doc` 
 
-1) Make `GET` request to `http://127.0.0.1:8000/a/v1/forecasts`. It will return something like 
-```python
-{
-  "type": "c",
-  "forecasts": [
-    {
-      "forecast_temperature": 13,
-      "forecast_datetime": "2018-23-10 06:06"
-    },
-    {
-      "forecast_temperature": 11,
-      "forecast_datetime": "2018-23-10 00:27"
-    },
-    {
-      "forecast_temperature": 15.8,
-      "forecast_datetime": "2018-23-10 12:27"
-    },
-    {
-      "forecast_temperature": 12.8,
-      "forecast_datetime": "2018-23-10 18:27"
-    }
-  ]
-}
-```
-You can use additional query params:
+1) Make `GET` request to `http://127.0.0.1:8000/a/v1/temperature/forecasts/<DATA>`. 
+    You can use additional query params:
+    
     - `type`: Temperature type. May have values `c`(celsius), `f`(fahrenheit), `k`(kelvin). By default used celsius.
-    - `days`: Forecast days count. Should be int values. By default - 3 days.   
+    - `days`: Forecast days count. Should be int values. By default - 3 days.  
+    
+    Example request: `http://127.0.0.1:8000/a/v1/temperature/forecasts/2018-10-26` will return
+    
+    ```
+        {
+          "type": "c",
+          "forecasts": [
+            {
+              "forecast_temperature": 7,
+              "forecast_datetime": "2018-10-26 00:00"
+            },
+            {
+              "forecast_temperature": -5,
+              "forecast_datetime": "2018-10-26 01:00"
+            },
+            {
+              "forecast_temperature": 11,
+              "forecast_datetime": "2018-10-26 02:00"
+            },
+            {
+              "forecast_temperature": 25,
+              "forecast_datetime": "2018-10-26 03:00"
+            },
+         ..........For every day and every hour until 2018-10-29
+    ``` 
 
-2) Make `GET` request to `http://127.0.0.1:8000/a/v1/forecasts/<DATE>` for get forecasts for current day. `DATE` format must be `YEAR-m-d`. It will return something like
-```python
-{
-  "type": "c",
-  "day_forecasts": [
-    {
-      "forecast_temperature": -1,
-      "forecast_datetime": "2018-10-23 06:06"
-    },
-    {
-      "forecast_temperature": -13,
-      "forecast_datetime": "2018-10-23 00:27"
-    },
-    {
-      "forecast_temperature": -15.8,
-      "forecast_datetime": "2018-10-23 12:27"
-    },
-    {
-      "forecast_temperature": -8,
-      "forecast_datetime": "2018-10-23 18:27"
-    }
-  ]
-}    
-``` 
-You can use additional query params:
+2) Make `GET` request to `http://127.0.0.1:8000/a/v1/temperature/<DATE>` for get forecasts for current day. `DATE` format must be `YEAR-m-d`.
+    You can use additional query params:
+    
     - `type`: Temperature type. May have values `c`(celsius), `f`(fahrenheit), `k`(kelvin). By default used celsius.
     - `hour`: For getting by current hour.
+        
+    Example request `http://127.0.0.1:8000/a/v1/temperature/2018-10-23?type=k&hour=12` will return:
+    
+    ```
+        {
+          "type": "k",
+          "temperature_data": [
+            {
+              "forecast_temperature": -3550.95,
+              "forecast_datetime": "2018-10-23 12:00"
+            }
+          ]
+        }
+    ``` 
+ 
