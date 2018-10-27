@@ -36,6 +36,7 @@ Full SWAGGER doc you can find here: `http://127.0.0.1:8000/a/v1/doc`
     
     - `type`: Temperature type. May have values `c`(celsius), `f`(fahrenheit), `k`(kelvin). By default used celsius.
     - `days`: Forecast days count. Should be int values. By default - 3 days.  
+    - `hour`: For getting by current hour.
     
     Example request: `http://127.0.0.1:8000/a/v1/temperature/forecasts/2018-10-26` will return
     
