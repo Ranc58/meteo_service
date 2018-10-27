@@ -6,18 +6,14 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 
 from .factories import ForecastFactory
+from .models import Forecast
 
 
 def create_test_data(days, yesterday=None):
-    if yesterday:
-        yesterday = timezone.now().replace(hour=0) - timedelta(days=1)
-        for forecast_hour in range(0, 24):
-            ForecastFactory(
-                forecast_datetime=yesterday.replace(hour=forecast_hour)
-            )
-        return
     for forecast_day in range(days):
-        day = timezone.now().replace(hour=0) + timedelta(days=forecast_day)
+        day = timezone.now().replace(hour=0, minute=0, second=0) + timedelta(days=forecast_day)
+        if yesterday:
+            day = timezone.now().replace(hour=0, minute=0, second=0) - timedelta(days=forecast_day)
         for forecast_hour in range(0, 24):
             ForecastFactory(
                 forecast_datetime=day.replace(hour=forecast_hour)
@@ -40,111 +36,111 @@ class TestForecastsHandler(APITestCase):
         self.assertEqual(data['error'], 'date must be greater or equal current date')
 
     def test_get_3_days_forecast_celsius(self):
-        create_test_data(5)
-        tomorrow_date = timezone.now().date()
+        create_test_data(10)
+        tomorrow_date = timezone.now().date() + timedelta(days=1)
         response = self.client.get(
             self.base_url.format(tomorrow_date)
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['forecasts']), 3*24)
-        self.assertEqual(data['type'], 'c')
+        self.assertEqual(len(data['meteo_data']), 3*24)
+        self.assertEqual(data['temperature_type'], 'c')
 
     def test_get_5_days_forecast_celsius(self):
-        create_test_data(8)
-        tomorrow_date = timezone.now().date()
+        create_test_data(10)
+        tomorrow_date = timezone.now().date() + timedelta(days=1)
         response = self.client.get(
             self.base_url.format(tomorrow_date),
             {'days': 5}
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['forecasts']), 5*24)
-        self.assertEqual(data['type'], 'c')
+        self.assertEqual(len(data['meteo_data']), 5*24)
+        self.assertEqual(data['temperature_type'], 'c')
 
     def test_get_7_days_forecast_celsius(self):
         create_test_data(10)
-        tomorrow_date = timezone.now().date()
+        tomorrow_date = timezone.now().date() + timedelta(days=1)
         response = self.client.get(
             self.base_url.format(tomorrow_date),
             {'days': 7}
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['forecasts']), 7*24)
-        self.assertEqual(data['type'], 'c')
+        self.assertEqual(len(data['meteo_data']), 7*24)
+        self.assertEqual(data['temperature_type'], 'c')
 
     def test_get_3_days_forecast_fahrenheit(self):
-        create_test_data(5)
-        tomorrow_date = timezone.now().date()
+        create_test_data(10)
+        tomorrow_date = timezone.now().date() + timedelta(days=1)
         response = self.client.get(
             self.base_url.format(tomorrow_date),
             {'type': 'f'}
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['forecasts']), 3*24)
-        self.assertEqual(data['type'], 'f')
+        self.assertEqual(len(data['meteo_data']), 3*24)
+        self.assertEqual(data['temperature_type'], 'f')
 
     def test_get_5_days_forecast_fahrenheit(self):
         create_test_data(8)
-        tomorrow_date = timezone.now().date()
+        tomorrow_date = timezone.now().date() + timedelta(days=1)
         response = self.client.get(
             self.base_url.format(tomorrow_date),
             {'days': 5, 'type': 'f'}
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['forecasts']), 5*24)
-        self.assertEqual(data['type'], 'f')
+        self.assertEqual(len(data['meteo_data']), 5*24)
+        self.assertEqual(data['temperature_type'], 'f')
 
     def test_get_7_days_forecast_fahrenheit(self):
         create_test_data(10)
-        tomorrow_date = timezone.now().date()
+        tomorrow_date = timezone.now().date() + timedelta(days=1)
         response = self.client.get(
             self.base_url.format(tomorrow_date),
             {'days': 7, 'type': 'f'}
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['forecasts']), 7*24)
-        self.assertEqual(data['type'], 'f')
+        self.assertEqual(len(data['meteo_data']), 7*24)
+        self.assertEqual(data['temperature_type'], 'f')
 
     def test_get_3_days_forecast_kelvin(self):
-        create_test_data(5)
-        tomorrow_date = timezone.now().date()
+        create_test_data(8)
+        tomorrow_date = timezone.now().date() + timedelta(days=1)
         response = self.client.get(
             self.base_url.format(tomorrow_date),
             {'type': 'k'}
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['forecasts']), 3*24)
-        self.assertEqual(data['type'], 'k')
+        self.assertEqual(len(data['meteo_data']), 3*24)
+        self.assertEqual(data['temperature_type'], 'k')
 
     def test_get_5_days_forecast_kelvin(self):
         create_test_data(8)
-        tomorrow_date = timezone.now().date()
+        tomorrow_date = timezone.now().date() + timedelta(days=1)
         response = self.client.get(
             self.base_url.format(tomorrow_date),
             {'days': 5, 'type': 'k'}
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['forecasts']), 5*24)
-        self.assertEqual(data['type'], 'k')
+        self.assertEqual(len(data['meteo_data']), 5*24)
+        self.assertEqual(data['temperature_type'], 'k')
 
     def test_get_7_days_forecast_kelvin(self):
         create_test_data(10)
-        tomorrow_date = timezone.now().date()
+        tomorrow_date = timezone.now().date() + timedelta(days=1)
         response = self.client.get(
             self.base_url.format(tomorrow_date),
             {'days': 7, 'type': 'k'}
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['forecasts']), 7*24)
-        self.assertEqual(data['type'], 'k')
+        self.assertEqual(len(data['meteo_data']), 7*24)
+        self.assertEqual(data['temperature_type'], 'k')
 
 
 class TestForecastHandler(APITestCase):
@@ -170,8 +166,8 @@ class TestForecastHandler(APITestCase):
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['temperature_data']), 24)
-        self.assertEqual(data['type'], 'c')
+        self.assertEqual(len(data['meteo_data']), 24)
+        self.assertEqual(data['temperature_type'], 'c')
 
     def test_get_by_date_kelvin(self):
         create_test_data(3, yesterday=True)
@@ -182,8 +178,8 @@ class TestForecastHandler(APITestCase):
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['temperature_data']), 24)
-        self.assertEqual(data['type'], 'k')
+        self.assertEqual(len(data['meteo_data']), 24)
+        self.assertEqual(data['temperature_type'], 'k')
 
     def test_get_by_date_fahrenheit(self):
         create_test_data(3, yesterday=True)
@@ -194,8 +190,8 @@ class TestForecastHandler(APITestCase):
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['temperature_data']), 24)
-        self.assertEqual(data['type'], 'f')
+        self.assertEqual(len(data['meteo_data']), 24)
+        self.assertEqual(data['temperature_type'], 'f')
 
     def test_get_by_current_datetime_celsius(self):
         create_test_data(3, yesterday=True)
@@ -206,8 +202,8 @@ class TestForecastHandler(APITestCase):
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['temperature_data']), 1)
-        self.assertEqual(data['type'], 'c')
+        self.assertEqual(len(data['meteo_data']), 1)
+        self.assertEqual(data['temperature_type'], 'c')
 
     def test_get_by_current_datetime_fahrenheit(self):
         create_test_data(3, yesterday=True)
@@ -218,8 +214,8 @@ class TestForecastHandler(APITestCase):
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['temperature_data']), 1)
-        self.assertEqual(data['type'], 'f')
+        self.assertEqual(len(data['meteo_data']), 1)
+        self.assertEqual(data['temperature_type'], 'f')
 
     def test_get_by_current_datetime_kelvin(self):
         create_test_data(3, yesterday=True)
@@ -230,5 +226,5 @@ class TestForecastHandler(APITestCase):
         )
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data['temperature_data']), 1)
-        self.assertEqual(data['type'], 'k')
+        self.assertEqual(len(data['meteo_data']), 1)
+        self.assertEqual(data['temperature_type'], 'k')
