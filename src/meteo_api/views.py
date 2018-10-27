@@ -1,83 +1,90 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
-
+from django.conf import settings
 from rest_framework import status
 from django.utils import timezone
 from rest_framework import generics
 from rest_framework.response import Response
+from django_filters import rest_framework as filters
 
-from .serializers import ForecastSerializer
+from .serializers import TemperatureSerializer
 from .models import Forecast
-from .schemas import ForecastsListFilterBackend, ForecastDateListFilterBackend
+from .filters import PeriodFilter, TemperatureFilter
 
 
-class ForecastList(generics.ListAPIView):
-    serializer_class = ForecastSerializer
-    filter_backends = (ForecastsListFilterBackend,)
-    name = 'forecast-list'
-
-    def get_queryset(self, *args, **kwargs):
-        data = dict(
-            temperature_type=self.request.query_params.get('type', 'c'),
-            days=int(self.request.query_params.get('days', 3)),
-            forecast_start_date=kwargs.get('forecast_start_date'),
-        )
-        queryset = Forecast.objects.forecasts_by_period(**data)
-        return queryset
-
-    def list(self, request, *args, **kwargs):
-        forecast_start_date = kwargs.get('forecast_date', timezone.now().date())
-        if isinstance(forecast_start_date, str):
-            forecast_start_date = datetime.strptime(
-                forecast_start_date, '%Y-%m-%d'
-            ).date()
-
-        if forecast_start_date < timezone.now().date():
-            return Response(
-                {'error': 'date must be greater or equal current date'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        queryset = self.get_queryset(forecast_start_date=forecast_start_date)
-        serializer = self.get_serializer(queryset, many=True)
-        result = {
-            'type': request.query_params.get('type') or 'c',
-            'forecasts': serializer.data
-        }
-        return Response(result)
-
-
-class ForecastDateList(generics.ListAPIView):
-    serializer_class = ForecastSerializer
-    name = 'forecast-detail'
-    lookup_field = 'forecast_date'
-    filter_backends = (ForecastDateListFilterBackend,)
+class TemperatureList(generics.ListAPIView):
+    queryset = Forecast.objects.all()
+    serializer_class = TemperatureSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_class = TemperatureFilter
 
     def get_queryset(self, *args, **kwargs):
-        data = dict(
-            temperature_type=self.request.query_params.get('type', 'c'),
-            request_hour=self.request.query_params.get('hour'),
-        )
-        queryset = Forecast.objects.forecasts_by_date(
-            request_date=kwargs.get('request_date'),
-            **data
+        queryset = Forecast.objects.filter(
+            forecast_datetime__contains=self.kwargs.get('request_date')
         )
         return queryset
 
     def list(self, request, *args, **kwargs):
-        request_date = kwargs.get('request_date', timezone.now().date())
-        if isinstance(request_date, str):
-            request_date = datetime.strptime(
-                request_date, '%Y-%m-%d'
-            ).date()
+        request_date = datetime.strptime(
+            kwargs.get('forecast_date'), '%Y-%m-%d'
+        ).date()
         if request_date > timezone.now().date():
             return Response(
                 {'error': 'date must be less or equal current date'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        queryset = self.get_queryset(request_date=request_date)
+        self.kwargs.update({'request_date': request_date})
+        queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
-        result = {
-            'type': request.query_params.get('type') or 'c',
-            'temperature_data': serializer.data
-        }
-        return Response(result)
+        temperature_type = self.request.query_params.get('type', 'c')
+        data = {
+                   'temperature_type': temperature_type,
+                   'meteo_data': serializer.data,
+               }
+        return Response(
+            data,
+            status=status.HTTP_200_OK
+        )
+
+
+class ForecastList(generics.ListAPIView):
+    queryset = Forecast.objects.all()
+    serializer_class = TemperatureSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_class = PeriodFilter
+
+    def get_queryset(self, *args, **kwargs):
+        forecast_start_date = self.kwargs.get('forecast_start_date')
+        queryset = Forecast.objects.filter(
+                forecast_datetime__gte=forecast_start_date
+            )
+        if self.request.query_params.get('days'):
+            return queryset
+        current_datetime = timezone.now().replace(hour=0, minute=0, second=0)
+        max_date = current_datetime + timedelta(days=settings.DEFAULT_DAYS_PERIOD)
+        queryset = queryset.filter(
+            forecast_datetime__lte=max_date.replace(hour=23, minute=59, second=59)
+        )
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        forecast_start_date = datetime.strptime(
+            kwargs.get('start_date'), '%Y-%m-%d'
+        ).date()
+        if forecast_start_date < timezone.now().date():
+            return Response(
+                {'error': 'date must be greater or equal current date'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        self.kwargs.update({'forecast_start_date': forecast_start_date})
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        temperature_type = self.request.query_params.get('type', 'c')
+        data = {
+                   'temperature_type': temperature_type,
+                   'meteo_data': serializer.data,
+               }
+        return Response(
+            data,
+            status=status.HTTP_200_OK
+        )

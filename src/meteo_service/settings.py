@@ -82,6 +82,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+REST_FRAMEWORK = {
+  'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
+}
+
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -97,3 +101,4 @@ STATIC_URL = '/static/'
 
 
 DATETIME_FORMAT = '%Y-%m-%d %H:%M'
+DEFAULT_DAYS_PERIOD = 3
