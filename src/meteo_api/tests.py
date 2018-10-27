@@ -6,7 +6,6 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 
 from .factories import ForecastFactory
-from .models import Forecast
 
 
 def create_test_data(days, yesterday=None):
@@ -34,6 +33,18 @@ class TestForecastsHandler(APITestCase):
         data = json.loads(response.content.decode())
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(data['error'], 'date must be greater or equal current date')
+
+    def test_get_3_days_forecast_celsius_current_time(self):
+        create_test_data(10)
+        tomorrow_date = timezone.now().date() + timedelta(days=1)
+        response = self.client.get(
+            self.base_url.format(tomorrow_date),
+            {'hour': 5}
+        )
+        data = json.loads(response.content.decode())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(data['meteo_data']), 3)
+        self.assertEqual(data['temperature_type'], 'c')
 
     def test_get_3_days_forecast_celsius(self):
         create_test_data(10)
